@@ -48,6 +48,8 @@ const ContentSecurityPolicy = [
     "https://*.hotjar.io",
     "https://px.ads.linkedin.com",
     "https://www.linkedin.com",
+    "https://*.supabase.co",
+    "wss://*.supabase.co",
   ].join(" "),
   "frame-src 'self' https://www.googletagmanager.com https://td.doubleclick.net",
   "frame-ancestors 'none'",

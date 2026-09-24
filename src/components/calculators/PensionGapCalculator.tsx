@@ -1,12 +1,14 @@
 "use client";
 
 import {
+  useEffect,
   useMemo,
   useRef,
   useState,
   type FormEvent,
   type ReactNode,
 } from "react";
+import { captureAndPersistTraffic } from "@/lib/leads/traffic";
 import {
   RISK_LEVELS,
   RETIREMENT_AGE_BY_GENDER,
@@ -25,6 +27,8 @@ import type {
   ContributionDestination,
   EntryStage,
   Holding,
+  PensionGapInputs,
+  PensionGapResult,
 } from "@/lib/calculators/pension-gap/types";
 import Link from "next/link";
 import { SoftSketchGapChart } from "@/components/brand/SoftSketchGapChart";
@@ -606,7 +610,7 @@ function GapResults({
 }
 
 /* -------------------------------------------------------------------------- */
-/* Lead form placeholder (UI only)                                            */
+/* Lead form — posts to /api/leads                                            */
 /* -------------------------------------------------------------------------- */
 
 function isValidIsraeliPhone(value: string): boolean {
@@ -618,7 +622,13 @@ function isValidEmail(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
-function LeadFormPlaceholder() {
+function LeadForm({
+  inputs,
+  results,
+}: {
+  inputs: PensionGapInputs;
+  results: PensionGapResult;
+}) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -626,6 +636,8 @@ function LeadFormPlaceholder() {
   const [marketing, setMarketing] = useState(false);
   const [touched, setTouched] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const nameOk = name.trim() !== "";
   const phoneTrim = phone.trim();
@@ -647,12 +659,41 @@ function LeadFormPlaceholder() {
       ? "כתובת האימייל לא תקינה"
       : null;
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setTouched(true);
-    if (!canSubmit) return;
-    // UI-only — no webhook / external submit
-    setSuccess(true);
+    setSubmitError(null);
+    if (!canSubmit || submitting) return;
+
+    setSubmitting(true);
+    try {
+      const traffic = captureAndPersistTraffic();
+      const res = await fetch("/api/leads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          calculator_id: "pension-gap",
+          name: name.trim(),
+          phone: phoneTrim || null,
+          email: emailTrim || null,
+          privacy_accepted: privacy,
+          marketing_opt_in: marketing,
+          inputs,
+          results,
+          ...traffic,
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean; error?: string };
+      if (!res.ok || !data.ok) {
+        setSubmitError("משהו השתבש בשליחה. נסו שוב בעוד רגע.");
+        return;
+      }
+      setSuccess(true);
+    } catch {
+      setSubmitError("אין חיבור כרגע. בדקו את הרשת ונסו שוב.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (success) {
@@ -745,19 +786,19 @@ function LeadFormPlaceholder() {
             required
           />
           <span>
-            הפרטים ישמשו לחזרה אליי בנוגע לפנייה זו, בהתאם ל
+            אני מאשר/ת לשמור את פרטי הקשר שלי, את הנתונים שהזנתי במחשבון
+            ואת התוצאה, כדי שייצרו איתי קשר.{" "}
             <Link
               href="/privacy"
               className="font-medium text-primary underline-offset-2 hover:underline"
             >
-              מדיניות הפרטיות
+              מדיניות פרטיות
             </Link>
-            .
           </span>
         </label>
         {touched && !privacy ? (
           <p className="text-xs text-[var(--color-gap)]">
-            נא לאשר את השימוש בפרטים בהתאם למדיניות הפרטיות
+            נא לאשר שמירת הפרטים והנתונים מהמחשבון בהתאם למדיניות הפרטיות
           </p>
         ) : null}
 
@@ -773,11 +814,16 @@ function LeadFormPlaceholder() {
           </span>
         </label>
 
+        {submitError ? (
+          <p className="text-sm text-[var(--color-gap)]">{submitError}</p>
+        ) : null}
+
         <button
           type="submit"
-          className="w-full rounded-[var(--radius-btn)] bg-primary px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          disabled={submitting}
+          className="w-full rounded-[var(--radius-btn)] bg-primary px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-60"
         >
-          רוצה לבדוק איך לשפר את התיק
+          {submitting ? "שולחים…" : "רוצה לבדוק איך לשפר את התיק"}
         </button>
         <p className="text-xs leading-relaxed text-text-muted">
           עין שנייה אינה משווקת פנסיונית מורשית ואינה נותנת ייעוץ פנסיוני.
@@ -933,6 +979,54 @@ export function PensionGapCalculator() {
       cashAmount: Number(cashAmount) || 0,
       contributionDestination,
     });
+  }, [
+    inputsValid,
+    age,
+    gender,
+    salary,
+    retirementAge,
+    entryStage,
+    accumulationEstimate,
+    fastTrackRisk,
+    fastAdditionalSavings,
+    fastSavingsRisk,
+    pensionFundOn,
+    pensionFundHoldings,
+    executiveOn,
+    executiveHoldings,
+    savingsOn,
+    savingsHoldings,
+    cashOn,
+    cashAmount,
+    contributionDestination,
+  ]);
+
+  useEffect(() => {
+    captureAndPersistTraffic();
+  }, []);
+
+  const inputsSnapshot: PensionGapInputs | null = useMemo(() => {
+    if (!inputsValid) return null;
+    return {
+      age: Number(age),
+      gender,
+      salary: Number(salary),
+      yearsToRetirement: retirementAge - Number(age),
+      entryStage,
+      accumulationEstimate: Number(accumulationEstimate) || 0,
+      fastTrackRisk,
+      fastAdditionalSavings: Number(fastAdditionalSavings) || 0,
+      fastSavingsRisk,
+      pensionFundOn,
+      pensionFundHoldings,
+      executiveOn,
+      executiveHoldings,
+      savingsOn,
+      savingsHoldings,
+      cashOn,
+      cashAmount: Number(cashAmount) || 0,
+      contributionDestination,
+    };
   }, [
     inputsValid,
     age,
@@ -1291,7 +1385,9 @@ export function PensionGapCalculator() {
             ← לעדכון החישוב
           </button>
 
-          <LeadFormPlaceholder />
+          {inputsSnapshot && result ? (
+            <LeadForm inputs={inputsSnapshot} results={result} />
+          ) : null}
         </div>
       ) : null}
 
