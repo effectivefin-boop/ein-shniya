@@ -786,19 +786,19 @@ function LeadForm({
             required
           />
           <span>
-            הפרטים ישמשו לחזרה אליי בנוגע לפנייה זו, בהתאם ל
+            אני מאשר/ת לשמור את פרטי הקשר שלי, את הנתונים שהזנתי במחשבון
+            ואת התוצאה, כדי שייצרו איתי קשר.{" "}
             <Link
               href="/privacy"
               className="font-medium text-primary underline-offset-2 hover:underline"
             >
-              מדיניות הפרטיות
+              מדיניות פרטיות
             </Link>
-            .
           </span>
         </label>
         {touched && !privacy ? (
           <p className="text-xs text-[var(--color-gap)]">
-            נא לאשר את השימוש בפרטים בהתאם למדיניות הפרטיות
+            נא לאשר שמירת הפרטים והנתונים מהמחשבון בהתאם למדיניות הפרטיות
           </p>
         ) : null}
 
