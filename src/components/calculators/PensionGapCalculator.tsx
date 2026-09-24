@@ -832,9 +832,6 @@ function LeadForm({
         >
           {submitting ? "שולחים…" : "רוצה לבדוק איך לשפר את התיק"}
         </button>
-        <p className="text-xs leading-relaxed text-text-muted">
-          עין שנייה אינה משווקת פנסיונית מורשית ואינה נותנת ייעוץ פנסיוני.
-        </p>
       </form>
     </div>
   );
