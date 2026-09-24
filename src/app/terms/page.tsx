@@ -3,7 +3,7 @@ import { StubPageShell } from "@/components/StubPageShell";
 
 export const metadata: Metadata = {
   title: "תנאי שימוש",
-  description: "טיוטת תנאי שימוש של עין שנייה — לאישור עו״ד.",
+  description: "תנאי השימוש באתר עין שנייה.",
   robots: { index: false, follow: false },
 };
 
@@ -11,8 +11,8 @@ export default function TermsPage() {
   return (
     <StubPageShell
       title="תנאי שימוש"
-      description="זו טיוטה לאישור עו״ד בלבד. היא אינה ייעוץ משפטי ואינה נוסח סופי."
-      draftLegal
+      description="כללים קצרים לשימוש באתר ובמחשבונים."
+      showPreparingBadge={false}
     >
       <div className="space-y-4 text-sm leading-relaxed text-text-muted">
         <p>
@@ -28,9 +28,6 @@ export default function TermsPage() {
         <p>
           <strong className="text-text">אחריות:</strong> השימוש באתר על אחריות
           המשתמש. אין להסתמך על התוצאות כתחליף לייעוץ מקצועי מותאם אישית.
-        </p>
-        <p className="rounded-lg bg-surface-muted px-3 py-2 text-xs">
-          יש להחליף טיוטה זו בנוסח שאושר על ידי עורך דין לפני עלייה לאוויר.
         </p>
       </div>
     </StubPageShell>
