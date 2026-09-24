@@ -23,7 +23,7 @@ export function Hero() {
               גם לכסף מגיע עין שנייה.
             </h1>
             <p className="mt-5 max-w-xl text-lg leading-relaxed text-text-muted sm:text-xl">
-              מחשבונים פשוטים לפנסיה, לחיסכון ולהוצאות. הם מראים איפה אתם
+              מחשבונים פשוטים לפנסיה, לחיסכון ולהוצאות. חשבו איפה אתם
               עומדים ואיפה יש פער ששווה לבדוק.
             </p>
             <div className="mt-8">
