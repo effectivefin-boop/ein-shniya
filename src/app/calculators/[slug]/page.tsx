@@ -41,7 +41,7 @@ const PENSION_GAP_FAQ = [
   },
   {
     q: "מה עושים אם יצא פער?",
-    a: "פער הוא נקודת פתיחה לבדיקה. אפשר ללחוץ על „רוצה לבדוק איך לשפר את התיק\" ולהשאיר שם וטלפון או אימייל, ונחזור אליכם. הפנייה לא מחייבת לכלום.",
+    a: "פער הוא נקודת פתיחה לבדיקה. אפשר ללחוץ על «רוצה לבדוק איך לשפר את התיק» ולהשאיר שם וטלפון או אימייל, ונחזור אליכם. הפנייה לא מחייבת לכלום.",
   },
 ] as const;
 
@@ -95,7 +95,7 @@ const PENSION_GAP_FAQ_JSON_LD = {
       name: "מה עושים אם יצא פער?",
       acceptedAnswer: {
         "@type": "Answer",
-        text: 'פער הוא נקודת פתיחה לבדיקה. אפשר ללחוץ על „רוצה לבדוק איך לשפר את התיק" ולהשאיר שם וטלפון או אימייל, ונחזור אליכם. הפנייה לא מחייבת לכלום.',
+        text: 'פער הוא נקודת פתיחה לבדיקה. אפשר ללחוץ על «רוצה לבדוק איך לשפר את התיק» ולהשאיר שם וטלפון או אימייל, ונחזור אליכם. הפנייה לא מחייבת לכלום.',
       },
     },
   ],
@@ -129,9 +129,6 @@ export default async function CalculatorPage({ params }: Props) {
         />
         <Container className="py-10 sm:py-14">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="mb-4 inline-flex rounded-full bg-primary-soft px-3 py-1 text-xs font-semibold text-primary">
-              מחשבון
-            </p>
             <h1 className="text-3xl font-bold tracking-tight text-text sm:text-4xl">
               מחשבון פער פנסיה
             </h1>
@@ -139,14 +136,6 @@ export default async function CalculatorPage({ params }: Props) {
               פער פנסיה הוא ההפרש בין הקצבה החודשית הצפויה מהחיסכון הפנסיוני
               לבין ההכנסה שתרצו לקבל אחרי הפרישה. מזינים כמה נתונים בסיסיים,
               ורואים אם יש פער ומה הגודל שלו.
-            </p>
-            <p className="mt-4 text-sm leading-relaxed text-text-muted">
-              <strong className="font-semibold text-text">חשוב לדעת:</strong>{" "}
-              החישוב מתבסס רק על החיסכון הפנסיוני.{" "}
-              <strong className="font-semibold text-text">
-                קצבת זקנה (קצבת אזרח ותיק) מביטוח לאומי לא נכללת בו.
-              </strong>{" "}
-              התוצאה היא המחשה בלבד. היא לא ייעוץ פנסיוני ולא הבטחה לתשואה.
             </p>
           </div>
           <div className="mt-10">
@@ -173,7 +162,21 @@ export default async function CalculatorPage({ params }: Props) {
                     {item.q}
                   </dt>
                   <dd className="mt-2 text-sm leading-relaxed text-text-muted">
-                    {item.a}
+                    {item.q === "מה עושים אם יצא פער?" ? (
+                      <>
+                        פער הוא נקודת פתיחה לבדיקה. אפשר ללחוץ על{" "}
+                        <a
+                          href="#pension-gap-lead"
+                          className="font-medium text-primary underline-offset-2 hover:underline"
+                        >
+                          «רוצה לבדוק איך לשפר את התיק»
+                        </a>{" "}
+                        ולהשאיר שם וטלפון או אימייל, ונחזור אליכם. הפנייה לא
+                        מחייבת לכלום.
+                      </>
+                    ) : (
+                      item.a
+                    )}
                   </dd>
                 </div>
               ))}

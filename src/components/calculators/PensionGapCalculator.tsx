@@ -657,7 +657,10 @@ function LeadFormPlaceholder() {
 
   if (success) {
     return (
-      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6 text-center shadow-[var(--shadow-card)] sm:p-8">
+      <div
+        id="pension-gap-lead"
+        className="scroll-mt-24 rounded-[var(--radius-card)] border border-border bg-surface p-6 text-center shadow-[var(--shadow-card)] sm:p-8"
+      >
         <p className="text-lg font-semibold text-text">
           קיבלנו. נחזור אליכם בהקדם.
         </p>
@@ -666,7 +669,10 @@ function LeadFormPlaceholder() {
   }
 
   return (
-    <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8">
+    <div
+      id="pension-gap-lead"
+      className="scroll-mt-24 rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
+    >
       <h3 className="text-xl font-bold text-text">
         זה הפער. עכשיו אפשר לבדוק מה עושים איתו.
       </h3>
