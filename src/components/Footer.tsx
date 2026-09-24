@@ -8,6 +8,7 @@ const footerLinks = [
   { href: "/about", label: "אודות" },
   { href: "/privacy", label: "פרטיות" },
   { href: "/terms", label: "תנאי שימוש" },
+  { href: "/accessibility", label: "נגישות" },
 ];
 
 export function Footer() {
@@ -55,10 +56,17 @@ export function Footer() {
             טקסטים משפטיים בדפי{" "}
             <Link href="/privacy" className="underline hover:text-primary">
               פרטיות
-            </Link>{" "}
-            ו
+            </Link>
+            ,{" "}
             <Link href="/terms" className="underline hover:text-primary">
               תנאי שימוש
+            </Link>{" "}
+            ו
+            <Link
+              href="/accessibility"
+              className="underline hover:text-primary"
+            >
+              נגישות
             </Link>{" "}
             הם <strong className="font-semibold">טיוטה לאישור עו״ד</strong> —
             לא ייעוץ משפטי ולא נוסח סופי.
