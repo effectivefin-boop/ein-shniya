@@ -163,19 +163,23 @@ function PillGroup({
   onChange,
   error,
   ariaLabel,
+  id,
 }: {
   options: string[];
   value?: string;
   onChange: (label: string) => void;
   error?: boolean;
   ariaLabel?: string;
+  id?: string;
 }) {
   return (
     <div
+      id={id}
       className="flex flex-wrap gap-2"
       role="radiogroup"
       aria-label={ariaLabel}
       aria-invalid={error || undefined}
+      tabIndex={-1}
     >
       {options.map((opt) => (
         <PillButton
@@ -300,16 +304,19 @@ function RiskAndExposureFields({
   holding,
   onChange,
   showErrors,
+  fieldIdPrefix,
 }: {
   holding: Holding;
   onChange: (patch: Partial<Holding>) => void;
   showErrors: boolean;
+  fieldIdPrefix?: string;
 }) {
   const [manualExposure, setManualExposure] = useState(holding.exposure !== "");
   return (
     <div className="space-y-3">
       <Field label="מסלול השקעה">
         <PillGroup
+          id={fieldIdPrefix ? `${fieldIdPrefix}-risk` : undefined}
           ariaLabel="מסלול השקעה"
           options={RISK_LEVELS.map((r) => r.label)}
           value={RISK_LEVELS.find((r) => r.id === holding.risk)?.label}
@@ -335,6 +342,7 @@ function RiskAndExposureFields({
       {manualExposure ? (
         <Field label="% חשיפה למניות בפועל">
           <NumberInput
+            id={fieldIdPrefix ? `${fieldIdPrefix}-exposure` : undefined}
             value={holding.exposure}
             onChange={(v) => onChange({ exposure: v })}
             placeholder="לדוגמה: 60"
@@ -363,6 +371,7 @@ function FundHoldingRow({
   onRemove: () => void;
   showErrors: boolean;
 }) {
+  const prefix = `pg-fund-${holding.id}`;
   return (
     <div className="space-y-3 rounded-xl border border-border bg-[var(--color-bg)]/50 p-3">
       {showRemove ? (
@@ -372,6 +381,7 @@ function FundHoldingRow({
       ) : null}
       <Field label="סכום הצבירה הנוכחי">
         <NumberInput
+          id={`${prefix}-amount`}
           value={holding.amount}
           onChange={(v) => onChange({ amount: v })}
           placeholder="לדוגמה: 450,000"
@@ -382,6 +392,7 @@ function FundHoldingRow({
         holding={holding}
         onChange={onChange}
         showErrors={showErrors}
+        fieldIdPrefix={prefix}
       />
     </div>
   );
@@ -401,12 +412,14 @@ function ExecutiveHoldingRow({
   showErrors: boolean;
 }) {
   const factorMode = holding.factorMode ?? "known";
+  const prefix = `pg-exec-${holding.id}`;
   return (
     <div className="space-y-3 rounded-xl border border-border bg-[var(--color-bg)]/50 p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1">
           <Field label="סכום הצבירה הנוכחי">
             <NumberInput
+              id={`${prefix}-amount`}
               value={holding.amount}
               onChange={(v) => onChange({ amount: v })}
               placeholder="לדוגמה: 400,000"
@@ -432,6 +445,7 @@ function ExecutiveHoldingRow({
       {factorMode === "unknown" ? (
         <Field label="שנת תחילת עבודה רציפה">
           <NumberInput
+            id={`${prefix}-start-year`}
             value={holding.startYear ?? ""}
             onChange={(v) => onChange({ startYear: v })}
             placeholder="לדוגמה: 2005"
@@ -444,6 +458,7 @@ function ExecutiveHoldingRow({
       ) : (
         <Field label="המקדם הקבוע בפוליסה">
           <NumberInput
+            id={`${prefix}-factor`}
             value={holding.knownFactor ?? ""}
             onChange={(v) => onChange({ knownFactor: v })}
             placeholder="לדוגמה: 190"
@@ -458,6 +473,7 @@ function ExecutiveHoldingRow({
         holding={holding}
         onChange={onChange}
         showErrors={showErrors}
+        fieldIdPrefix={prefix}
       />
     </div>
   );
@@ -479,15 +495,20 @@ function SavingsHoldingRow({
   const needsManager = (
     SAVINGS_TYPES_WITH_MANAGER as readonly string[]
   ).includes(holding.assetLabel);
+  const prefix = `pg-savings-${holding.id}`;
   return (
     <div className="space-y-3 rounded-xl border border-border bg-[var(--color-bg)]/50 p-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex-1">
           <Field label="סוג המוצר הפיננסי">
             <select
+              id={`${prefix}-asset`}
               value={holding.assetLabel}
               onChange={(e) =>
                 onChange({ assetLabel: e.target.value, managedBy: "" })
+              }
+              aria-invalid={
+                showErrors && holding.assetLabel === "" ? true : undefined
               }
               className={`w-full rounded-[var(--radius-btn)] border bg-surface px-3 py-2.5 text-base text-text ${
                 showErrors && holding.assetLabel === ""
@@ -509,6 +530,7 @@ function SavingsHoldingRow({
       {needsManager ? (
         <Field label="היכן הכסף מנוהל">
           <PillGroup
+            id={`${prefix}-managed`}
             options={["בית השקעות או חברת ביטוח", "דרך הבנק"]}
             value={
               holding.managedBy === "bank"
@@ -529,6 +551,7 @@ function SavingsHoldingRow({
       ) : null}
       <Field label="סך ההון ברכיב זה">
         <NumberInput
+          id={`${prefix}-amount`}
           value={holding.amount}
           onChange={(v) => onChange({ amount: v })}
           placeholder="לדוגמה: 150,000"
@@ -539,6 +562,7 @@ function SavingsHoldingRow({
         holding={holding}
         onChange={onChange}
         showErrors={showErrors}
+        fieldIdPrefix={prefix}
       />
     </div>
   );
@@ -914,7 +938,10 @@ export function PensionGapCalculator() {
   const detailedRiskValid =
     (!pensionFundOn || pensionFundHoldings.every((h) => h.risk !== "")) &&
     (!executiveOn || executiveHoldings.every((h) => h.risk !== "")) &&
-    (!savingsOn || savingsHoldings.every((h) => h.risk !== "")) &&
+    (!savingsOn ||
+      savingsHoldings.every(
+        (h) => h.risk !== "" && h.assetLabel !== "",
+      )) &&
     (!pensionFundOn || !executiveOn || contributionDestination !== "") &&
     (!savingsOn ||
       savingsHoldings.every(
@@ -1045,6 +1072,126 @@ export function PensionGapCalculator() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!calculating) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [calculating]);
+
+  const getFirstInvalidFieldId = (): string | null => {
+    if (age === "" || Number(age) <= 0 || Number(age) >= retirementAge) {
+      return "pg-age";
+    }
+    if (salary === "" || Number(salary) <= 0) {
+      return "pg-salary";
+    }
+
+    if (entryStage === "fast") {
+      if (
+        accumulationEstimate === "" ||
+        Number(accumulationEstimate) < 0
+      ) {
+        return "pg-accumulation";
+      }
+      if (fastTrackRisk === "") return "pg-fast-track-risk";
+      if (
+        fastAdditionalSavings !== "" &&
+        (Number(fastAdditionalSavings) < 0 || fastSavingsRisk === "")
+      ) {
+        if (Number(fastAdditionalSavings) < 0) return "pg-fast-additional";
+        return "pg-fast-savings-risk";
+      }
+      return null;
+    }
+
+    // detailed path — walk holdings in form order
+    if (pensionFundOn) {
+      for (const h of pensionFundHoldings) {
+        const prefix = `pg-fund-${h.id}`;
+        if (h.amount === "" || Number(h.amount) < 0) return `${prefix}-amount`;
+        if (h.risk === "") return `${prefix}-risk`;
+        if (
+          h.exposure !== "" &&
+          (Number(h.exposure) < 0 || Number(h.exposure) > 100)
+        ) {
+          return `${prefix}-exposure`;
+        }
+      }
+    }
+
+    if (executiveOn) {
+      for (const h of executiveHoldings) {
+        const prefix = `pg-exec-${h.id}`;
+        if (h.amount === "" || Number(h.amount) < 0) return `${prefix}-amount`;
+        if (h.factorMode === "unknown") {
+          if (h.startYear === "" || Number(h.startYear) <= 0) {
+            return `${prefix}-start-year`;
+          }
+        } else if (
+          h.knownFactor === "" ||
+          Number(h.knownFactor) <= 0
+        ) {
+          return `${prefix}-factor`;
+        }
+        if (h.risk === "") return `${prefix}-risk`;
+        if (
+          h.exposure !== "" &&
+          (Number(h.exposure) < 0 || Number(h.exposure) > 100)
+        ) {
+          return `${prefix}-exposure`;
+        }
+      }
+    }
+
+    if (pensionFundOn && executiveOn && contributionDestination === "") {
+      return "pg-contribution-dest";
+    }
+
+    if (savingsOn) {
+      for (const h of savingsHoldings) {
+        const prefix = `pg-savings-${h.id}`;
+        if (h.assetLabel === "") return `${prefix}-asset`;
+        const needsManager = (
+          SAVINGS_TYPES_WITH_MANAGER as readonly string[]
+        ).includes(h.assetLabel);
+        if (needsManager && h.managedBy === "") return `${prefix}-managed`;
+        if (h.amount === "" || Number(h.amount) < 0) return `${prefix}-amount`;
+        if (h.risk === "") return `${prefix}-risk`;
+        if (
+          h.exposure !== "" &&
+          (Number(h.exposure) < 0 || Number(h.exposure) > 100)
+        ) {
+          return `${prefix}-exposure`;
+        }
+      }
+    }
+
+    if (cashOn && (cashAmount === "" || Number(cashAmount) < 0)) {
+      return "pg-cash-amount";
+    }
+
+    return null;
+  };
+
+  const focusFieldById = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    const isDirectlyFocusable =
+      el instanceof HTMLElement &&
+      (el.matches("input, select, textarea, button") ||
+        el.tabIndex >= 0);
+    const target: HTMLElement | null = isDirectlyFocusable
+      ? el
+      : el.querySelector<HTMLElement>(
+          "input, select, textarea, button, [tabindex]",
+        );
+    target?.focus({ preventScroll: true });
+  };
+
   const handleCalculate = () => {
     if (!inputsValid || !result) return;
     if (calcTimersRef.current.step) clearInterval(calcTimersRef.current.step);
@@ -1083,6 +1230,13 @@ export function PensionGapCalculator() {
   const handleSubmit = () => {
     if (!inputsValid) {
       setShowErrors(true);
+      const id = getFirstInvalidFieldId();
+      // Wait for error styles / aria-invalid to paint, then scroll + focus
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          if (id) focusFieldById(id);
+        });
+      });
       return;
     }
     setShowErrors(false);
@@ -1101,6 +1255,7 @@ export function PensionGapCalculator() {
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="גיל נוכחי">
                 <NumberInput
+                  id="pg-age"
                   value={age}
                   onChange={setAge}
                   placeholder="לדוגמה: 45"
@@ -1136,6 +1291,7 @@ export function PensionGapCalculator() {
 
             <Field label="שכר חודשי ברוטו">
               <NumberInput
+                id="pg-salary"
                 value={salary}
                 onChange={setSalary}
                 placeholder="לדוגמה: 22,000"
@@ -1147,6 +1303,7 @@ export function PensionGapCalculator() {
               <div className="space-y-4">
                 <Field label="סך הצבירה הפנסיונית הנוכחית">
                   <NumberInput
+                    id="pg-accumulation"
                     value={accumulationEstimate}
                     onChange={setAccumulationEstimate}
                     placeholder="למשל 400,000"
@@ -1160,6 +1317,7 @@ export function PensionGapCalculator() {
                 {accumulationEstimate !== "" ? (
                   <Field label="מסלול השקעה">
                     <PillGroup
+                      id="pg-fast-track-risk"
                       ariaLabel="מסלול השקעה"
                       options={RISK_LEVELS.map((r) => r.label)}
                       value={
@@ -1180,6 +1338,7 @@ export function PensionGapCalculator() {
                   hint="לא זוכרים במדויק? הכל טוב. הערכה כללית תספיק כדי לתת לכם כיוון."
                 >
                   <NumberInput
+                    id="pg-fast-additional"
                     value={fastAdditionalSavings}
                     onChange={setFastAdditionalSavings}
                     placeholder="למשל 150,000"
@@ -1193,6 +1352,7 @@ export function PensionGapCalculator() {
                 {fastAdditionalSavings !== "" ? (
                   <Field label="מסלול השקעה (עבור החסכונות הנוספים)">
                     <PillGroup
+                      id="pg-fast-savings-risk"
                       ariaLabel="מסלול השקעה לחסכונות נוספים"
                       options={RISK_LEVELS.map((r) => r.label)}
                       value={
@@ -1318,6 +1478,7 @@ export function PensionGapCalculator() {
                 {pensionFundOn && executiveOn ? (
                   <Field label="לאיזו קופה מופקדים הכספים שלכם מדי חודש?">
                     <PillGroup
+                      id="pg-contribution-dest"
                       options={["קרן פנסיה", "ביטוח מנהלים"]}
                       value={
                         contributionDestination === "executive"
@@ -1379,6 +1540,7 @@ export function PensionGapCalculator() {
                 >
                   <Field label="סך הכסף הנזיל שאינו מושקע">
                     <NumberInput
+                      id="pg-cash-amount"
                       value={cashAmount}
                       onChange={setCashAmount}
                       placeholder="לדוגמה: 150,000"
@@ -1408,26 +1570,28 @@ export function PensionGapCalculator() {
 
       {calculating ? (
         <div
-          className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
+          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[var(--color-bg)] px-6"
           role="status"
           aria-live="polite"
           aria-busy="true"
         >
-          <p className="mb-3 text-center text-sm text-text-muted">
-            {CALC_STEPS[calcStepIndex]}
-          </p>
-          <div
-            className="h-2 overflow-hidden rounded-full"
-            style={{ background: "var(--color-surface-muted)" }}
-          >
+          <div className="w-full max-w-md">
+            <p className="mb-4 text-center text-base font-medium text-text">
+              {CALC_STEPS[calcStepIndex]}
+            </p>
             <div
-              className="h-full rounded-full"
-              style={{
-                width: `${barWidth}%`,
-                background: barColor,
-                transition: `width ${CALC_ANIMATION_MS}ms ease, background-color ${CALC_ANIMATION_MS}ms ease`,
-              }}
-            />
+              className="h-2 overflow-hidden rounded-full"
+              style={{ background: "var(--color-surface-muted)" }}
+            >
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${barWidth}%`,
+                  background: barColor,
+                  transition: `width ${CALC_ANIMATION_MS}ms ease, background-color ${CALC_ANIMATION_MS}ms ease`,
+                }}
+              />
+            </div>
           </div>
         </div>
       ) : null}
@@ -1458,6 +1622,7 @@ export function PensionGapCalculator() {
       ) : null}
 
       {/* Disclaimer — source-style adapted; excludes קצבת זקנה; Soft Sketch / עין שנייה */}
+      {!calculating ? (
       <aside className="rounded-[var(--radius-card)] border border-border bg-surface-muted/60 p-5 text-sm leading-relaxed text-text-muted">
         <p>
           <strong className="font-semibold text-text">הבהרה משפטית:</strong>{" "}
@@ -1485,6 +1650,7 @@ export function PensionGapCalculator() {
           תחליף לבדיקה אישית אצל בעל רישיון.
         </p>
       </aside>
+      ) : null}
     </div>
   );
 }
