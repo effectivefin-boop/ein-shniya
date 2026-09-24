@@ -56,4 +56,24 @@ export type PensionGapResult = {
   earlyRetirementAge: number | null;
   blendedExposure: number;
   benchmark: number;
+  /** True when exposure comparison is reliable (no bare מנייתי default). */
+  hasExplicitExposureData: boolean;
+};
+
+export type NoteType = "critical" | "warning" | "positive";
+
+export type NoteIconKind =
+  | "shield"
+  | "sparkles"
+  | "banknote"
+  | "landmark"
+  | "fileWarning";
+
+export type ResultNote = {
+  type: NoteType;
+  icon: NoteIconKind;
+  title: string;
+  bigNumber?: string;
+  text: string;
+  impact: number;
 };

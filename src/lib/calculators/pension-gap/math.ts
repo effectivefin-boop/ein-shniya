@@ -401,6 +401,15 @@ export function computePensionGap(input: PensionGapInputs): PensionGapResult | n
     contributionFactor;
   // APPROVED CHANGE: no OLD_AGE_BENEFIT added to monthlyAtBenchmark.
 
+  // Exposure-mismatch findings are only trustworthy when no holding relies on the
+  // assumed 80% "מנייתי" default without an explicit exposure figure.
+  const hasUnreliableEquityDefault = [
+    ...activePensionHoldings,
+    ...activeExecutiveHoldings,
+    ...activeSavingsHoldings,
+  ].some((h) => h.exposure === "" && h.risk === "menayoti");
+  const hasExplicitExposureData = !hasUnreliableEquityDefault;
+
   return {
     years,
     monthlyIncome,
@@ -416,5 +425,6 @@ export function computePensionGap(input: PensionGapInputs): PensionGapResult | n
     earlyRetirementAge,
     blendedExposure,
     benchmark,
+    hasExplicitExposureData,
   };
 }

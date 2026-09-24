@@ -19,10 +19,13 @@ import {
 } from "@/lib/calculators/pension-gap/constants";
 import {
   computePensionGap,
-  formatILS,
-  formatILSApprox,
   makeHolding,
 } from "@/lib/calculators/pension-gap/math";
+import {
+  CALC_ANIMATION_MS,
+  CALC_STEP_MS,
+  CALC_STEPS,
+} from "@/lib/calculators/pension-gap/notes";
 import type {
   ContributionDestination,
   EntryStage,
@@ -31,7 +34,7 @@ import type {
   PensionGapResult,
 } from "@/lib/calculators/pension-gap/types";
 import Link from "next/link";
-import { SoftSketchGapChart } from "@/components/brand/SoftSketchGapChart";
+import { GapResults } from "@/components/calculators/GapResults";
 
 /* -------------------------------------------------------------------------- */
 /* Small UI primitives                                                        */
@@ -545,98 +548,6 @@ function SavingsHoldingRow({
 /* Results: היום → אפשרי → הפער                                              */
 /* -------------------------------------------------------------------------- */
 
-function GapResults({
-  monthlyIncome,
-  monthlyPossible,
-  salary,
-  gapAmount,
-  earlyRetirementAge,
-}: {
-  monthlyIncome: number;
-  monthlyPossible: number;
-  salary: number;
-  gapAmount: number;
-  earlyRetirementAge: number | null;
-}) {
-  const salaryGap = Math.max(gapAmount, 0);
-  const vsPossible = Math.max(monthlyPossible - monthlyIncome, 0);
-
-  return (
-    <div className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]">
-      <div className="border-b border-border/70 bg-[var(--color-bg)] px-4 pt-6 sm:px-8 sm:pt-8">
-        <SoftSketchGapChart className="mx-auto w-full max-w-lg" />
-      </div>
-
-      <div className="space-y-5 p-6 sm:p-8">
-        <div className="text-center">
-          <p className="text-sm text-text-muted">קצבה חודשית משוערת בפרישה</p>
-          <p className="mt-1 text-3xl font-bold tabular-nums text-text sm:text-4xl">
-            ‎₪{formatILSApprox(monthlyIncome)}
-          </p>
-          <p className="mt-1 text-sm text-text-muted">
-            מול שכר נוכחי של ‎₪{formatILS(salary)}
-          </p>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-border bg-[var(--color-bg)]/60 px-4 py-3">
-            <p className="text-xs font-medium text-text-muted">היום</p>
-            <p className="mt-1 text-xl font-semibold tabular-nums text-text">
-              ‎₪{formatILSApprox(monthlyIncome)}
-            </p>
-            <p className="text-xs text-text-muted">מסלול נוכחי משוער</p>
-          </div>
-          <div className="rounded-xl border border-border bg-[var(--color-bg)]/60 px-4 py-3">
-            <p className="text-xs font-medium text-text-muted">אפשרי</p>
-            <p className="mt-1 text-xl font-semibold tabular-nums text-text">
-              ‎₪{formatILSApprox(monthlyPossible)}
-            </p>
-            <p className="text-xs text-text-muted">תרחיש לפי חשיפה מיטבית לטווח</p>
-          </div>
-        </div>
-
-        {/* Gap callout — coral soft bg/border; readable amount uses --color-gap-text */}
-        <div
-          className="flex flex-col items-stretch gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
-          style={{
-            borderColor:
-              "color-mix(in srgb, var(--color-gap) 30%, transparent)",
-            background: "var(--color-gap-soft)",
-          }}
-        >
-          <div>
-            <p className="text-sm font-semibold text-text">הפער</p>
-            <p className="text-xs text-text-muted">
-              {salaryGap > 0
-                ? "הפרש מול השכר החודשי הנוכחי"
-                : vsPossible > 0
-                  ? "פוטנציאל שיפור מול תרחיש אפשרי"
-                  : "אין פער משמעותי מול השכר"}
-            </p>
-          </div>
-          <p
-            className="text-2xl font-bold tabular-nums sm:text-3xl"
-            style={{ color: "var(--color-gap-text)" }}
-          >
-            ‎₪{formatILSApprox(salaryGap > 0 ? salaryGap : vsPossible)}
-            <span className="ms-1 text-sm font-medium text-text-muted">
-              /חודש
-            </span>
-          </p>
-        </div>
-
-        {earlyRetirementAge !== null ? (
-          <p className="rounded-xl border border-border bg-[var(--color-bg)]/60 px-4 py-3 text-sm text-text">
-            לפי סימולציית חשיפה מיטבית, ייתכן שתוכלו לבחון פרישה מוקדמת בסביבות{" "}
-            <strong>גיל {earlyRetirementAge}</strong>. זו הערכה כללית בלבד —
-            לא המלצה.
-          </p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
 /* -------------------------------------------------------------------------- */
 /* Lead form — posts to /api/leads                                            */
 /* -------------------------------------------------------------------------- */
@@ -939,6 +850,12 @@ export function PensionGapCalculator() {
 
   const [submitted, setSubmitted] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
+  const [calculating, setCalculating] = useState(false);
+  const [calcStepIndex, setCalcStepIndex] = useState(0);
+  const [barWidth, setBarWidth] = useState(0);
+  const [barColor, setBarColor] = useState("var(--color-primary)");
+  const [leadReady, setLeadReady] = useState(false);
+  const calcTimersRef = useRef<{ step?: ReturnType<typeof setInterval>; done?: ReturnType<typeof setTimeout> }>({});
 
   const retirementAge = RETIREMENT_AGE_BY_GENDER[gender];
 
@@ -1121,18 +1038,60 @@ export function PensionGapCalculator() {
     contributionDestination,
   ]);
 
+  useEffect(() => {
+    return () => {
+      if (calcTimersRef.current.step) clearInterval(calcTimersRef.current.step);
+      if (calcTimersRef.current.done) clearTimeout(calcTimersRef.current.done);
+    };
+  }, []);
+
+  const handleCalculate = () => {
+    if (!inputsValid || !result) return;
+    if (calcTimersRef.current.step) clearInterval(calcTimersRef.current.step);
+    if (calcTimersRef.current.done) clearTimeout(calcTimersRef.current.done);
+
+    setSubmitted(false);
+    setLeadReady(false);
+    setCalculating(true);
+    setBarWidth(0);
+    setBarColor("var(--color-primary)");
+    setCalcStepIndex(0);
+
+    const targetColor =
+      result.gapPercent > 0 ? "var(--color-error)" : "#2E7D4F";
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setBarWidth(100);
+        setBarColor(targetColor);
+      });
+    });
+
+    let step = 0;
+    calcTimersRef.current.step = setInterval(() => {
+      step += 1;
+      if (step < CALC_STEPS.length) setCalcStepIndex(step);
+    }, CALC_STEP_MS);
+
+    calcTimersRef.current.done = setTimeout(() => {
+      if (calcTimersRef.current.step) clearInterval(calcTimersRef.current.step);
+      setCalculating(false);
+      setSubmitted(true);
+    }, CALC_ANIMATION_MS);
+  };
+
   const handleSubmit = () => {
     if (!inputsValid) {
       setShowErrors(true);
       return;
     }
     setShowErrors(false);
-    setSubmitted(true);
+    handleCalculate();
   };
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
-      {!submitted ? (
+      {!submitted && !calculating ? (
         <div className="rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]">
           <div className="rounded-t-[var(--radius-card)] bg-primary px-5 py-4 text-center text-lg font-bold text-white">
             מחשבון הפער בין ההכנסה החודשית לקצבה בפרישה
@@ -1445,38 +1404,75 @@ export function PensionGapCalculator() {
             )}
           </div>
         </div>
-      ) : result ? (
+      ) : null}
+
+      {calculating ? (
+        <div
+          className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8"
+          role="status"
+          aria-live="polite"
+          aria-busy="true"
+        >
+          <p className="mb-3 text-center text-sm text-text-muted">
+            {CALC_STEPS[calcStepIndex]}
+          </p>
+          <div
+            className="h-2 overflow-hidden rounded-full"
+            style={{ background: "var(--color-surface-muted)" }}
+          >
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${barWidth}%`,
+                background: barColor,
+                transition: `width ${CALC_ANIMATION_MS}ms ease, background-color ${CALC_ANIMATION_MS}ms ease`,
+              }}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {submitted && result && inputsSnapshot ? (
         <div className="space-y-6">
           <GapResults
-            monthlyIncome={result.monthlyIncome}
-            monthlyPossible={result.monthlyAtBenchmark}
-            salary={result.currentSalary}
-            gapAmount={result.gapAmount}
-            earlyRetirementAge={result.earlyRetirementAge}
+            result={result}
+            inputs={inputsSnapshot}
+            onLeadReady={setLeadReady}
           />
 
           <button
             type="button"
-            onClick={() => setSubmitted(false)}
+            onClick={() => {
+              setSubmitted(false);
+              setLeadReady(false);
+            }}
             className="text-sm font-semibold text-primary hover:underline"
           >
             ← לעדכון החישוב
           </button>
 
-          {inputsSnapshot && result ? (
+          {leadReady ? (
             <LeadForm inputs={inputsSnapshot} results={result} />
           ) : null}
         </div>
       ) : null}
 
-      {/* Disclaimer — pack wording; excludes קצבת זקנה */}
+      {/* Disclaimer — source-style adapted; excludes קצבת זקנה; Soft Sketch / עין שנייה */}
       <aside className="rounded-[var(--radius-card)] border border-border bg-surface-muted/60 p-5 text-sm leading-relaxed text-text-muted">
         <p>
+          <strong className="font-semibold text-text">הבהרה משפטית:</strong>{" "}
+          התוצאות וההערות המוצגות במחשבון הן הערכה כללית ואוטומטית בלבד,
+          המבוססת על הנתונים שהזנתם ועל הנחות יסוד ממוצעות שאינן מובטחות. המידע{" "}
           <strong className="font-semibold text-text">
-            החישוב להמחשה בלבד.
+            אינו מהווה ייעוץ פנסיוני, ייעוץ השקעות או ייעוץ מס
           </strong>{" "}
-          הוא מתבסס על הנתונים שהזנתם ועל הנחות כלליות, כמו תשואה שנתית ומקדם
-          המרה משוערים. הוא לא מבטיח קצבה, תשואה או תוצאה כלשהי.
+          המותאם לנתוניו וצרכיו האישיים של המשתמש, ואינו תחליף לבחינה מקצועית.{" "}
+          <strong className="font-semibold text-text">
+            עין שנייה אינה בעלת רישיון ואינה עוסקת בייעוץ או בשיווק פנסיוני.
+          </strong>{" "}
+          השארת פרטים מהווה הסכמה להעברתם לאיש מקצוע בעל רישיון בתחום החיסכון
+          הפנסיוני, לצורך יצירת קשר. אין לבצע פעולות פיננסיות על בסיס נתונים אלו
+          ללא התייעצות עם בעל רישיון.
         </p>
         <p className="mt-3">
           <strong className="font-semibold text-text">
@@ -1485,9 +1481,8 @@ export function PensionGapCalculator() {
           , גם אם אתם זכאים לה.
         </p>
         <p className="mt-3">
-          תשואות עבר אינן מעידות על תשואות עתידיות. עין שנייה אינה בעלת רישיון
-          שיווק פנסיוני או ייעוץ פנסיוני. המידע אינו ייעוץ ואינו תחליף לבדיקה
-          אישית אצל בעל רישיון.
+          תשואות עבר אינן מעידות על תשואות עתידיות. המידע אינו ייעוץ ואינו
+          תחליף לבדיקה אישית אצל בעל רישיון.
         </p>
       </aside>
     </div>
