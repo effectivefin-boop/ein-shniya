@@ -1,16 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  /* Soft Sketch — warm paper surface, teal structure, coral ONLY for gap */
+  /* Soft Sketch — warm paper surface, teal structure, coral for gap decoration */
   --color-bg: #f7f4ef; /* warm paper-ish, not dirty */
   --color-surface: #fffcf7;
   --color-surface-muted: #efeae3;
   --color-primary: #0d5c63;
   --color-primary-hover: #0a4a50;
   --color-primary-soft: #d9ecee;
-  /* Gap accent — use ONLY via --color-gap in Gap* / BrandMark */
+  /* Gap decoration (soft bg / border / icon) — not for readable text or errors */
   --color-gap: #e07a5f;
   --color-gap-soft: #fce8e2;
+  /* Readable gap amounts / labels on soft backgrounds */
+  --color-gap-text: #b04a32;
+  /* Form / system errors — never reuse gap coral */
+  --color-error: #9b2c1f;
   --color-accent: var(--color-gap); /* alias — prefer --color-gap in new code */
   --color-accent-soft: var(--color-gap-soft);
   --color-text: #1a2b2c;
@@ -33,6 +37,8 @@
   --color-primary-soft: var(--color-primary-soft);
   --color-gap: var(--color-gap);
   --color-gap-soft: var(--color-gap-soft);
+  --color-gap-text: var(--color-gap-text);
+  --color-error: var(--color-error);
   --color-accent: var(--color-accent);
   --color-accent-soft: var(--color-accent-soft);
   --color-text: var(--color-text);

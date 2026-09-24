@@ -27,10 +27,13 @@ export default function CalculatorsPage() {
           <li key={item.slug}>
             <Link
               href={`/calculators/${item.slug}`}
+              aria-label={`לבדיקה — ${item.name}`}
               className="flex items-center justify-between px-4 py-3 text-text transition-colors hover:bg-surface-muted"
             >
               <span className="font-medium">{item.name}</span>
-              <span className="text-sm text-primary">לבדיקה ←</span>
+              <span className="text-sm text-primary" aria-hidden="true">
+                לבדיקה ←
+              </span>
             </Link>
           </li>
         ))}

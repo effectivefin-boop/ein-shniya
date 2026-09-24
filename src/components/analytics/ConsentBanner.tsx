@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import {
   pushConsentToDataLayer,
   readStoredConsent,
@@ -17,11 +17,68 @@ type Props = {
 
 export function ConsentBanner({ enabled, consentRequired }: Props) {
   const [visible, setVisible] = useState(false);
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
+  const titleId = useId();
+  const descId = useId();
 
   useEffect(() => {
     if (!enabled || !consentRequired) return;
     if (readStoredConsent() === null) setVisible(true);
   }, [enabled, consentRequired]);
+
+  useEffect(() => {
+    if (!visible) return;
+
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    const dialog = dialogRef.current;
+
+    const getFocusable = () => {
+      if (!dialog) return [] as HTMLElement[];
+      return Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+    };
+
+    const focusables = getFocusable();
+    // Prefer the deny button (first) so focus lands in the action group
+    (focusables[0] ?? dialog)?.focus();
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        // Temporary dismiss — do not store consent; banner may reappear next visit
+        setVisible(false);
+        return;
+      }
+      if (e.key !== "Tab" || !dialog) return;
+      const items = getFocusable();
+      if (items.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement as HTMLElement | null;
+      if (e.shiftKey) {
+        if (active === first || !dialog.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      previouslyFocused.current?.focus();
+    };
+  }, [visible]);
 
   if (!visible) return null;
 
@@ -33,21 +90,21 @@ export function ConsentBanner({ enabled, consentRequired }: Props) {
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
-      aria-labelledby="consent-title"
-      aria-describedby="consent-desc"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      aria-describedby={descId}
+      tabIndex={-1}
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface/95 p-4 shadow-[0_-8px_30px_rgba(26,43,44,0.12)] backdrop-blur-sm sm:p-5"
     >
       <div className="mx-auto flex max-w-5xl flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div className="max-w-2xl">
-          <h2
-            id="consent-title"
-            className="text-base font-semibold text-text"
-          >
+          <h2 id={titleId} className="text-base font-semibold text-text">
             עוגיות ומדידה
           </h2>
           <p
-            id="consent-desc"
+            id={descId}
             className="mt-1 text-sm leading-relaxed text-text-muted"
           >
             אנחנו משתמשים בכלי מדידה (למשל Google Tag Manager / Analytics)

@@ -97,6 +97,7 @@ export function CalculatorsGrid() {
                   </p>
                   <Link
                     href={`/calculators/${calc.slug}`}
+                    aria-label={`לבדיקה — ${calc.name}`}
                     className="mt-5 inline-flex w-fit items-center rounded-[var(--radius-btn)] border border-border bg-surface px-4 py-2 text-sm font-semibold text-primary transition-colors hover:border-primary hover:bg-primary-soft"
                   >
                     לבדיקה
