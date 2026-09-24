@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
-import { ADMIN_EMAIL, isAdminEmail } from "@/lib/leads/admin";
+import { isAdminEmail } from "@/lib/leads/admin";
 
+/**
+ * Allowlist gate only — OTP must be triggered in the browser so PKCE
+ * verifier cookies are set on the same client that opens the magic link.
+ */
 export async function POST(request: Request) {
   let email: string | undefined;
   try {
@@ -15,28 +18,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: false, error: "email_required" }, { status: 400 });
   }
 
-  // Reject non-allowlisted emails server-side — do not send OTP.
   if (!isAdminEmail(email)) {
     return NextResponse.json(
       { ok: false, error: "unauthorized_email" },
       { status: 403 },
     );
-  }
-
-  const origin = new URL(request.url).origin;
-  const supabase = await createClient();
-
-  const { error } = await supabase.auth.signInWithOtp({
-    email: ADMIN_EMAIL,
-    options: {
-      emailRedirectTo: `${origin}/api/auth/callback?next=/admin/leads`,
-      shouldCreateUser: true,
-    },
-  });
-
-  if (error) {
-    console.error("[admin/login] otp failed", error.message);
-    return NextResponse.json({ ok: false, error: "otp_failed" }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

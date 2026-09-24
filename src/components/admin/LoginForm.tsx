@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export function LoginForm() {
   const [email, setEmail] = useState("");
@@ -14,11 +15,13 @@ export function LoginForm() {
     setStatus("loading");
     setErrorMsg(null);
 
+    const trimmed = email.trim();
+
     try {
       const res = await fetch("/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ email: trimmed }),
       });
       const data = (await res.json()) as { ok?: boolean; error?: string };
 
@@ -28,6 +31,22 @@ export function LoginForm() {
         } else {
           setErrorMsg("שליחת הקישור נכשלה. נסו שוב.");
         }
+        setStatus("error");
+        return;
+      }
+
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOtp({
+        email: trimmed,
+        options: {
+          emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/admin/leads`,
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        console.error("[admin/login] otp failed", error.message);
+        setErrorMsg("שליחת הקישור נכשלה. נסו שוב.");
         setStatus("error");
         return;
       }
