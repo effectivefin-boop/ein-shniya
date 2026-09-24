@@ -3,7 +3,7 @@ import { StubPageShell } from "@/components/StubPageShell";
 
 export const metadata: Metadata = {
   title: "הצהרת נגישות",
-  description: "טיוטת הצהרת נגישות של עין שנייה — לאישור עו״ד.",
+  description: "הצהרת הנגישות של אתר עין שנייה.",
   robots: { index: false, follow: false },
 };
 
@@ -11,8 +11,8 @@ export default function AccessibilityPage() {
   return (
     <StubPageShell
       title="הצהרת נגישות"
-      description="זו טיוטה לאישור עו״ד בלבד. היא אינה ייעוץ משפטי ואינה נוסח סופי."
-      draftLegal
+      description="איך אנחנו פועלים לנגישות האתר ואיך אפשר לפנות אלינו."
+      showPreparingBadge={false}
     >
       <div className="space-y-6 text-sm leading-relaxed text-text-muted">
         <section className="space-y-3" aria-labelledby="a11y-goal">
@@ -100,10 +100,6 @@ export default function AccessibilityPage() {
           </p>
         </section>
 
-        <p className="rounded-lg bg-surface-muted px-3 py-2 text-xs">
-          יש להחליף טיוטה זו בנוסח שאושר על ידי עורך דין לפני עלייה לאוויר
-          כהצהרה סופית.
-        </p>
       </div>
     </StubPageShell>
   );

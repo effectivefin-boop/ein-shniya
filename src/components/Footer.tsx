@@ -52,25 +52,6 @@ export function Footer() {
             כספיות יש לפנות לאיש מקצוע בעל רישיון מתאים. אין באתר הצעה
             לשיווק מוצרים פנסיונים.
           </p>
-          <p className="rounded-lg bg-surface-muted px-3 py-2 text-text-muted">
-            טקסטים משפטיים בדפי{" "}
-            <Link href="/privacy" className="underline hover:text-primary">
-              פרטיות
-            </Link>
-            ,{" "}
-            <Link href="/terms" className="underline hover:text-primary">
-              תנאי שימוש
-            </Link>{" "}
-            ו
-            <Link
-              href="/accessibility"
-              className="underline hover:text-primary"
-            >
-              נגישות
-            </Link>{" "}
-            הם <strong className="font-semibold">טיוטה לאישור עו״ד</strong> —
-            לא ייעוץ משפטי ולא נוסח סופי.
-          </p>
           <p className="pt-2">
             © {new Date().getFullYear()} עין שנייה. כל הזכויות שמורות.
           </p>
