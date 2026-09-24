@@ -880,6 +880,7 @@ export function PensionGapCalculator() {
   const [barColor, setBarColor] = useState("var(--color-primary)");
   const [leadReady, setLeadReady] = useState(false);
   const calcTimersRef = useRef<{ step?: ReturnType<typeof setInterval>; done?: ReturnType<typeof setTimeout> }>({});
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const retirementAge = RETIREMENT_AGE_BY_GENDER[gender];
 
@@ -1222,8 +1223,19 @@ export function PensionGapCalculator() {
 
     calcTimersRef.current.done = setTimeout(() => {
       if (calcTimersRef.current.step) clearInterval(calcTimersRef.current.step);
+      // Unlock overlay body lock before results mount / scroll
+      document.body.style.overflow = "";
       setCalculating(false);
       setSubmitted(true);
+      // Wait for GapResults to mount, then scroll to start of results (not bottom)
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          resultsRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          });
+        });
+      });
     }, CALC_ANIMATION_MS);
   };
 
@@ -1597,7 +1609,11 @@ export function PensionGapCalculator() {
       ) : null}
 
       {submitted && result && inputsSnapshot ? (
-        <div className="space-y-6">
+        <div
+          ref={resultsRef}
+          id="pension-gap-results"
+          className="scroll-mt-24 space-y-6"
+        >
           <GapResults
             result={result}
             inputs={inputsSnapshot}
