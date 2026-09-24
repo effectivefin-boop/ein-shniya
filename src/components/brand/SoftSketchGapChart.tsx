@@ -4,7 +4,8 @@ type SoftSketchGapChartProps = {
 
 /**
  * Hand-drawn soft-sketch gap chart (SVG).
- * Teal structure + single coral gap mark. No text baked into the graphic.
+ * Teal structure + coral gap mark (decoration only via --color-gap).
+ * Readable gap amounts elsewhere use --color-gap-text. No text in the graphic.
  */
 export function SoftSketchGapChart({ className = "" }: SoftSketchGapChartProps) {
   return (
@@ -79,7 +80,7 @@ export function SoftSketchGapChart({ className = "" }: SoftSketchGapChartProps) 
         strokeLinecap="round"
       />
 
-      {/* Coral gap mark — THE only --color-gap stroke */}
+      {/* Coral gap mark — decorative --color-gap stroke (not readable text) */}
       <path
         d="M190 88
            C198 110 200 135 196 160

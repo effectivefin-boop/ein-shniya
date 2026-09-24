@@ -2,9 +2,10 @@ import { Container } from "./Container";
 import { SoftSketchGapChart } from "./brand/SoftSketchGapChart";
 
 /**
- * Brand metaphor "הפער": soft-sketch comparison + coral ONLY on the gap.
+ * Brand metaphor "הפער": soft-sketch comparison.
  * Numbers are illustrative placeholders — not real customer data.
- * Coral token (--color-gap) is used only here and in BrandMark.
+ * Decoration (soft bg / border / icon): --color-gap / --color-gap-soft (coral).
+ * Readable gap amount text: --color-gap-text (#b04a32) — not coral.
  */
 export function GapVisual() {
   return (
@@ -48,7 +49,7 @@ export function GapVisual() {
                 </div>
               </div>
 
-              {/* Gap callout — ONLY place --color-gap / accent is used in page UI */}
+              {/* Gap callout — coral decoration; readable amount uses --color-gap-text */}
               <div
                 className="flex flex-col items-stretch gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
                 style={{
@@ -78,7 +79,7 @@ export function GapVisual() {
                 </div>
                 <p
                   className="text-2xl font-bold tabular-nums sm:text-3xl"
-                  style={{ color: "var(--color-gap)" }}
+                  style={{ color: "var(--color-gap-text)" }}
                 >
                   ‎₪2,200
                   <span className="ms-1 text-sm font-medium text-text-muted">

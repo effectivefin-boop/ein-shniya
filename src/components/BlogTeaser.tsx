@@ -72,6 +72,7 @@ export function BlogTeaser() {
                 </p>
                 <Link
                   href={`/blog/${post.slug}`}
+                  aria-label={`לקריאה — ${post.title}`}
                   className="mt-4 text-sm font-semibold text-primary hover:underline"
                 >
                   לקריאה

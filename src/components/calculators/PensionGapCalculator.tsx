@@ -64,6 +64,8 @@ function TextInput({
   error,
   type = "text",
   inputMode,
+  id,
+  describedBy,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -71,16 +73,21 @@ function TextInput({
   error?: boolean;
   type?: string;
   inputMode?: "numeric" | "decimal" | "tel" | "email" | "text";
+  id?: string;
+  describedBy?: string;
 }) {
   return (
     <input
+      id={id}
       type={type}
       inputMode={inputMode}
       value={value}
       onChange={(e) => onChange(e.target.value)}
       placeholder={placeholder}
+      aria-invalid={error || undefined}
+      aria-describedby={describedBy}
       className={`w-full rounded-[var(--radius-btn)] border bg-surface px-3 py-2.5 text-base text-text outline-none transition-colors placeholder:text-text-muted/60 focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary ${
-        error ? "border-[var(--color-gap)]" : "border-border"
+        error ? "border-[var(--color-error)]" : "border-border"
       }`}
     />
   );
@@ -91,11 +98,15 @@ function NumberInput({
   onChange,
   placeholder,
   error,
+  id,
+  describedBy,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
   error?: boolean;
+  id?: string;
+  describedBy?: string;
 }) {
   return (
     <TextInput
@@ -104,6 +115,8 @@ function NumberInput({
       placeholder={placeholder}
       error={error}
       inputMode="decimal"
+      id={id}
+      describedBy={describedBy}
     />
   );
 }
@@ -113,21 +126,26 @@ function PillButton({
   onClick,
   children,
   error,
+  role = "radio",
 }: {
   active: boolean;
   onClick: () => void;
   children: ReactNode;
   error?: boolean;
+  role?: "radio" | "button";
 }) {
   return (
     <button
       type="button"
+      role={role}
+      aria-checked={role === "radio" ? active : undefined}
+      aria-pressed={role === "button" ? active : undefined}
       onClick={onClick}
       className={`flex-1 rounded-full border px-3 py-2 text-sm font-semibold transition-colors ${
         active
           ? "border-primary bg-primary text-white"
           : error
-            ? "border-[var(--color-gap)] bg-surface text-text"
+            ? "border-[var(--color-error)] bg-surface text-text"
             : "border-border bg-surface text-text hover:bg-surface-muted"
       }`}
     >
@@ -141,14 +159,21 @@ function PillGroup({
   value,
   onChange,
   error,
+  ariaLabel,
 }: {
   options: string[];
   value?: string;
   onChange: (label: string) => void;
   error?: boolean;
+  ariaLabel?: string;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div
+      className="flex flex-wrap gap-2"
+      role="radiogroup"
+      aria-label={ariaLabel}
+      aria-invalid={error || undefined}
+    >
       {options.map((opt) => (
         <PillButton
           key={opt}
@@ -184,6 +209,8 @@ function ToggleCard({
     >
       <button
         type="button"
+        role="switch"
+        aria-checked={checked}
         onClick={onToggle}
         className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start"
       >
@@ -255,7 +282,7 @@ function RemoveButton({ onClick }: { onClick: () => void }) {
     <button
       type="button"
       onClick={onClick}
-      className="text-xs font-medium text-text-muted hover:text-[var(--color-gap)]"
+      className="text-xs font-medium text-text-muted hover:text-primary"
     >
       הסרה
     </button>
@@ -280,6 +307,7 @@ function RiskAndExposureFields({
     <div className="space-y-3">
       <Field label="מסלול השקעה">
         <PillGroup
+          ariaLabel="מסלול השקעה"
           options={RISK_LEVELS.map((r) => r.label)}
           value={RISK_LEVELS.find((r) => r.id === holding.risk)?.label}
           onChange={(label) =>
@@ -460,7 +488,7 @@ function SavingsHoldingRow({
               }
               className={`w-full rounded-[var(--radius-btn)] border bg-surface px-3 py-2.5 text-base text-text ${
                 showErrors && holding.assetLabel === ""
-                  ? "border-[var(--color-gap)]"
+                  ? "border-[var(--color-error)]"
                   : "border-border"
               }`}
             >
@@ -567,7 +595,7 @@ function GapResults({
           </div>
         </div>
 
-        {/* Gap callout — coral ONLY here */}
+        {/* Gap callout — coral soft bg/border; readable amount uses --color-gap-text */}
         <div
           className="flex flex-col items-stretch gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between"
           style={{
@@ -588,7 +616,7 @@ function GapResults({
           </div>
           <p
             className="text-2xl font-bold tabular-nums sm:text-3xl"
-            style={{ color: "var(--color-gap)" }}
+            style={{ color: "var(--color-gap-text)" }}
           >
             ‎₪{formatILSApprox(salaryGap > 0 ? salaryGap : vsPossible)}
             <span className="ms-1 text-sm font-medium text-text-muted">
@@ -701,6 +729,8 @@ function LeadForm({
       <div
         id="pension-gap-lead"
         className="scroll-mt-24 rounded-[var(--radius-card)] border border-border bg-surface p-6 text-center shadow-[var(--shadow-card)] sm:p-8"
+        role="status"
+        aria-live="polite"
       >
         <p className="text-lg font-semibold text-text">
           קיבלנו. נחזור אליכם בהקדם.
@@ -726,13 +756,19 @@ function LeadForm({
 
         <Field label="שם מלא">
           <TextInput
+            id="lead-name"
             value={name}
             onChange={setName}
             placeholder="השם שלכם"
             error={Boolean(nameError)}
+            describedBy={nameError ? "lead-name-error" : undefined}
           />
           {nameError ? (
-            <span className="mt-1 block text-xs text-[var(--color-gap)]">
+            <span
+              id="lead-name-error"
+              className="mt-1 block text-xs text-[var(--color-error)]"
+              role="alert"
+            >
               {nameError}
             </span>
           ) : null}
@@ -740,14 +776,26 @@ function LeadForm({
 
         <Field label="טלפון">
           <TextInput
+            id="lead-phone"
             value={phone}
             onChange={setPhone}
             placeholder="050-0000000"
             inputMode="tel"
             error={Boolean(contactError || phoneError)}
+            describedBy={
+              phoneError
+                ? "lead-phone-error"
+                : contactError
+                  ? "lead-contact-error"
+                  : undefined
+            }
           />
           {phoneError ? (
-            <span className="mt-1 block text-xs text-[var(--color-gap)]">
+            <span
+              id="lead-phone-error"
+              className="mt-1 block text-xs text-[var(--color-error)]"
+              role="alert"
+            >
               {phoneError}
             </span>
           ) : null}
@@ -755,22 +803,40 @@ function LeadForm({
 
         <Field label="אימייל">
           <TextInput
+            id="lead-email"
             value={email}
             onChange={setEmail}
             placeholder="name@example.com"
             type="email"
             inputMode="email"
             error={Boolean(contactError || emailError)}
+            describedBy={
+              emailError
+                ? "lead-email-error"
+                : contactError
+                  ? "lead-contact-error"
+                  : undefined
+            }
           />
           {emailError ? (
-            <span className="mt-1 block text-xs text-[var(--color-gap)]">
+            <span
+              id="lead-email-error"
+              className="mt-1 block text-xs text-[var(--color-error)]"
+              role="alert"
+            >
               {emailError}
             </span>
           ) : null}
         </Field>
 
         {contactError ? (
-          <p className="text-xs text-[var(--color-gap)]">{contactError}</p>
+          <p
+            id="lead-contact-error"
+            className="text-xs text-[var(--color-error)]"
+            role="alert"
+          >
+            {contactError}
+          </p>
         ) : (
           <p className="text-xs text-text-muted">
             מספיק טלפון או אימייל. לא צריך את שניהם.
@@ -797,7 +863,7 @@ function LeadForm({
           </span>
         </label>
         {touched && !privacy ? (
-          <p className="text-xs text-[var(--color-gap)]">
+          <p className="text-xs text-[var(--color-error)]" role="alert">
             נא לאשר שמירת הפרטים והנתונים מהמחשבון בהתאם למדיניות הפרטיות
           </p>
         ) : null}
@@ -815,7 +881,13 @@ function LeadForm({
         </label>
 
         {submitError ? (
-          <p className="text-sm text-[var(--color-gap)]">{submitError}</p>
+          <p
+            className="text-sm text-[var(--color-error)]"
+            role="alert"
+            aria-live="assertive"
+          >
+            {submitError}
+          </p>
         ) : null}
 
         <button
@@ -1082,7 +1154,11 @@ export function PensionGapCalculator() {
                 />
               </Field>
               <Field label="מגדר">
-                <div className="flex gap-2">
+                <div
+                  className="flex gap-2"
+                  role="radiogroup"
+                  aria-label="מגדר"
+                >
                   <PillButton
                     active={gender === "male"}
                     onClick={() => setGender("male")}
@@ -1125,6 +1201,7 @@ export function PensionGapCalculator() {
                 {accumulationEstimate !== "" ? (
                   <Field label="מסלול השקעה">
                     <PillGroup
+                      ariaLabel="מסלול השקעה"
                       options={RISK_LEVELS.map((r) => r.label)}
                       value={
                         RISK_LEVELS.find((r) => r.id === fastTrackRisk)?.label
@@ -1157,6 +1234,7 @@ export function PensionGapCalculator() {
                 {fastAdditionalSavings !== "" ? (
                   <Field label="מסלול השקעה (עבור החסכונות הנוספים)">
                     <PillGroup
+                      ariaLabel="מסלול השקעה לחסכונות נוספים"
                       options={RISK_LEVELS.map((r) => r.label)}
                       value={
                         RISK_LEVELS.find((r) => r.id === fastSavingsRisk)

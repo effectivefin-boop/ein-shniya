@@ -60,7 +60,11 @@ export function LoginForm() {
 
   if (status === "sent") {
     return (
-      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6 text-center shadow-[var(--shadow-card)] sm:p-8">
+      <div
+        className="rounded-[var(--radius-card)] border border-border bg-surface p-6 text-center shadow-[var(--shadow-card)] sm:p-8"
+        role="status"
+        aria-live="polite"
+      >
         <h1 className="text-xl font-bold text-text">בדקו את האימייל</h1>
         <p className="mt-2 text-sm text-text-muted">
           שלחנו קישור התחברות ל־{email.trim()}. הקישור תקף לזמן מוגבל.
@@ -94,7 +98,13 @@ export function LoginForm() {
         </label>
 
         {errorMsg ? (
-          <p className="text-sm text-[var(--color-gap)]">{errorMsg}</p>
+          <p
+            className="text-sm text-[var(--color-error)]"
+            role="alert"
+            aria-live="assertive"
+          >
+            {errorMsg}
+          </p>
         ) : null}
 
         <button
