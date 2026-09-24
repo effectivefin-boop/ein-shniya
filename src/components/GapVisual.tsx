@@ -37,14 +37,14 @@ export function GapVisual() {
                   <p className="mt-1 text-xl font-semibold tabular-nums text-text">
                     ‎₪6,200
                   </p>
-                  <p className="text-xs text-text-muted">מצב נוכחי (המחשה)</p>
+                  <p className="text-xs text-text-muted">מצב נוכחי</p>
                 </div>
                 <div className="rounded-xl border border-border bg-[var(--color-bg)]/60 px-4 py-3">
                   <p className="text-xs font-medium text-text-muted">אפשרי</p>
                   <p className="mt-1 text-xl font-semibold tabular-nums text-text">
                     ‎₪8,400
                   </p>
-                  <p className="text-xs text-text-muted">תרחיש לבדיקה (המחשה)</p>
+                  <p className="text-xs text-text-muted">תרחיש לבדיקה</p>
                 </div>
               </div>
 

@@ -35,9 +35,6 @@ export default function CalculatorsPage() {
           </li>
         ))}
       </ul>
-      <p className="text-sm text-text-muted">
-        כלי בדיקה והמחשה — לא ייעוץ. אפשר להמשיך לשיחה עם איש מקצוע בעל רישיון.
-      </p>
     </StubPageShell>
   );
 }

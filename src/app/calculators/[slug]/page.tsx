@@ -25,7 +25,7 @@ export default async function CalculatorStubPage({ params }: Props) {
   return (
     <StubPageShell
       title={name}
-      description="המחשבון בהכנה. בקרוב תוכלו להזין מספרים ולראות את הפער — כלי בדיקה והמחשה בלבד, לא ייעוץ."
+      description="המחשבון בהכנה. בקרוב תוכלו להזין מספרים ולראות את הפער."
     />
   );
 }

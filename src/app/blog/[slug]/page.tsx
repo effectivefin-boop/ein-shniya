@@ -6,7 +6,7 @@ type Props = { params: Promise<{ slug: string }> };
 const titles: Record<string, string> = {
   "what-is-pension-gap": "מה זה בכלל ״פער פנסיה״?",
   "management-fees-explained": "דמי ניהול: למה אחוז קטן משנה הרבה",
-  "checkup-vs-advice": "בדיקה זה לא ייעוץ — וזה בסדר",
+  "when-to-check-savings": "מתי שווה לעצור ולבדוק את החיסכון",
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -21,7 +21,7 @@ export default async function BlogPostStubPage({ params }: Props) {
   return (
     <StubPageShell
       title={title}
-      description="הכתבה בהכנה. התוכן יהיה הסבר קצר ודגרי — בלי המלצות ובלי שיווק מוצרים."
+      description="הכתבה בהכנה. בקרוב יופיע כאן הסבר קצר וברור."
     />
   );
 }

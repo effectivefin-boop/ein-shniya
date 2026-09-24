@@ -13,14 +13,14 @@ const posts = [
     slug: "management-fees-explained",
     title: "דמי ניהול: למה אחוז קטן משנה הרבה",
   },
-  { slug: "checkup-vs-advice", title: "בדיקה זה לא ייעוץ — וזה בסדר" },
+  { slug: "when-to-check-savings", title: "מתי שווה לעצור ולבדוק את החיסכון" },
 ];
 
 export default function BlogPage() {
   return (
     <StubPageShell
       title="בלוג"
-      description="כתבות קצרות שמסבירות מושגים ופערים — בלי לשווק מוצרים ובלי להציג ייעוץ."
+      description="כתבות קצרות שמסבירות מושגים ופערים בפנסיה, בחיסכון ובהוצאות."
     >
       <ul className="space-y-3">
         {posts.map((post) => (
