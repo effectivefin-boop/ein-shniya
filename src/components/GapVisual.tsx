@@ -18,9 +18,6 @@ export function GapVisual() {
             >
               ככה נראית בדיקה בעין שנייה
             </h2>
-            <p className="mt-3 text-base text-text-muted">
-              היום מול אפשרי — והפער מודגש. דוגמה להמחשה בלבד.
-            </p>
           </div>
 
           <figure className="mt-10 overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-[var(--shadow-card)]">
@@ -77,9 +74,6 @@ export function GapVisual() {
                   </span>
                   <div>
                     <p className="text-sm font-semibold text-text">הפער</p>
-                    <p className="text-xs text-text-muted">
-                      מה ששווה לבדוק — לא המלצה לפעולה
-                    </p>
                   </div>
                 </div>
                 <p
@@ -92,11 +86,6 @@ export function GapVisual() {
                   </span>
                 </p>
               </div>
-
-              <p className="text-center text-xs text-text-muted">
-                מספרים להמחשת המותג בלבד — לא נתוני לקוחות ולא תוצאת חישוב
-                אמיתית.
-              </p>
             </div>
           </figure>
         </div>
