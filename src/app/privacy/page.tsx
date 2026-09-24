@@ -33,11 +33,25 @@ export default function PrivacyPage() {
           משאירים פרטים, אנחנו שומרים את פרטי הקשר שלכם, את הנתונים שהזנתם
           במחשבון ואת התוצאה, רק כדי ליצור איתכם קשר. התוצאה היא הערכה
           בלבד. היא לא ייעוץ ולא הבטחה לתשואה. כדי לראות את המידע השמור
-          עליכם או למחוק אותו, כתבו לנו: [אימייל].
+          עליכם או למחוק אותו, כתבו לנו:{" "}
+          <a
+            href="mailto:effective.fin@gmail.com"
+            className="font-medium text-primary underline-offset-2 hover:underline"
+            dir="ltr"
+          >
+            effective.fin@gmail.com
+          </a>
+          .
         </p>
         <p>
-          <strong className="text-text">יצירת קשר:</strong> לפרטים נוספים
-          לאחר אישור הנוסח — יתווסף כאן אימייל ליצירת קשר.
+          <strong className="text-text">יצירת קשר:</strong>{" "}
+          <a
+            href="mailto:effective.fin@gmail.com"
+            className="font-medium text-primary underline-offset-2 hover:underline"
+            dir="ltr"
+          >
+            effective.fin@gmail.com
+          </a>
         </p>
         <p className="rounded-lg bg-surface-muted px-3 py-2 text-xs">
           יש להחליף טיוטה זו בנוסח שאושר על ידי עורך דין לפני עלייה לאוויר
