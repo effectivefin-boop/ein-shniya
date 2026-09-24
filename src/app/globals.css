@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+:root {
+  /* Soft Sketch — warm paper surface, teal structure, coral ONLY for gap */
+  --color-bg: #f7f4ef; /* warm paper-ish, not dirty */
+  --color-surface: #fffcf7;
+  --color-surface-muted: #efeae3;
+  --color-primary: #0d5c63;
+  --color-primary-hover: #0a4a50;
+  --color-primary-soft: #d9ecee;
+  /* Gap accent — use ONLY via --color-gap in Gap* / BrandMark */
+  --color-gap: #e07a5f;
+  --color-gap-soft: #fce8e2;
+  --color-accent: var(--color-gap); /* alias — prefer --color-gap in new code */
+  --color-accent-soft: var(--color-gap-soft);
+  --color-text: #1a2b2c;
+  --color-text-muted: #4a5c5e;
+  --color-border: #ddd5c8;
+  --color-focus: #0d5c63;
+  --radius-card: 1rem;
+  --radius-btn: 0.75rem;
+  --shadow-card: 0 1px 2px rgb(13 92 99 / 0.04), 0 8px 24px rgb(13 92 99 / 0.05);
+  --shadow-card-hover: 0 2px 4px rgb(13 92 99 / 0.05), 0 12px 32px rgb(13 92 99 / 0.09);
+  --paper-dots: url("/brand/paper-dots.svg");
+}
+
+@theme inline {
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-muted: var(--color-surface-muted);
+  --color-primary: var(--color-primary);
+  --color-primary-hover: var(--color-primary-hover);
+  --color-primary-soft: var(--color-primary-soft);
+  --color-gap: var(--color-gap);
+  --color-gap-soft: var(--color-gap-soft);
+  --color-accent: var(--color-accent);
+  --color-accent-soft: var(--color-accent-soft);
+  --color-text: var(--color-text);
+  --color-text-muted: var(--color-text-muted);
+  --color-border: var(--color-border);
+  --font-sans: var(--font-heebo);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-heebo), "Heebo", system-ui, sans-serif;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: 1rem;
+  top: -100%;
+  z-index: 100;
+  border-radius: var(--radius-btn);
+  background: var(--color-primary);
+  color: white;
+  padding: 0.75rem 1rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+/* Subtle soft-sketch paper dots — keep very quiet */
+.paper-dots {
+  background-image: var(--paper-dots);
+  background-size: 24px 24px;
+}

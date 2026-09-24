@@ -1,0 +1,47 @@
+import type { Metadata } from "next";
+import { StubPageShell } from "@/components/StubPageShell";
+
+export const metadata: Metadata = {
+  title: "מדיניות פרטיות",
+  description: "טיוטת מדיניות פרטיות של עין שנייה — לאישור עו״ד.",
+  robots: { index: false, follow: false },
+};
+
+export default function PrivacyPage() {
+  return (
+    <StubPageShell
+      title="מדיניות פרטיות"
+      description="זו טיוטה לאישור עו״ד בלבד. היא אינה ייעוץ משפטי ואינה נוסח סופי."
+      draftLegal
+    >
+      <div className="space-y-4 text-sm leading-relaxed text-text-muted">
+        <p>
+          <strong className="text-text">מה אנחנו אוספים (טיוטה):</strong> בעת
+          שימוש במחשבונים ייתכן שיישמרו נתונים שהזנתם באופן מקומי בדפדפן או
+          יישלחו לשרת לצורך חישוב. לא נמכור את המידע שלכם לצדדים שלישיים
+          לשיווק.
+        </p>
+        <p>
+          <strong className="text-text">מדידה ועוגיות (טיוטה):</strong>{" "}
+          האתר עשוי להשתמש בכלי אנליטיקה מקובלים (למשל Google Tag Manager,
+          Google Analytics, Meta Pixel, Microsoft Clarity וכדומה) כדי להבין
+          שימוש באתר ולשפר אותו. כשההגדרה דורשת הסכמה, התגיות נטענות רק אחרי
+          אישור במסך העוגיות. ניתן לדחות מדידה; ההעדפה נשמרת בדפדפן שלכם.
+        </p>
+        <p>
+          <strong className="text-text">לידים:</strong> אם תבחרו להשאיר פרטי
+          יצירת קשר, הם יועברו לאיש מקצוע בעל רישיון רלוונטי — לא למשווק
+          שאינו בעל רישיון מטעמנו.
+        </p>
+        <p>
+          <strong className="text-text">יצירת קשר:</strong> לפרטים נוספים
+          לאחר אישור הנוסח — יתווסף כאן אימייל ליצירת קשר.
+        </p>
+        <p className="rounded-lg bg-surface-muted px-3 py-2 text-xs">
+          יש להחליף טיוטה זו בנוסח שאושר על ידי עורך דין לפני עלייה לאוויר
+          עם איסוף נתונים אמיתי.
+        </p>
+      </div>
+    </StubPageShell>
+  );
+}
