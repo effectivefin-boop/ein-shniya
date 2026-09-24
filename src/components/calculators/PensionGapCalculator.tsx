@@ -1,6 +1,12 @@
 "use client";
 
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import {
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from "react";
 import {
   RISK_LEVELS,
   RETIREMENT_AGE_BY_GENDER,
@@ -20,6 +26,7 @@ import type {
   EntryStage,
   Holding,
 } from "@/lib/calculators/pension-gap/types";
+import Link from "next/link";
 import { SoftSketchGapChart } from "@/components/brand/SoftSketchGapChart";
 
 /* -------------------------------------------------------------------------- */
@@ -602,41 +609,103 @@ function GapResults({
 /* Lead form placeholder (UI only)                                            */
 /* -------------------------------------------------------------------------- */
 
+function isValidIsraeliPhone(value: string): boolean {
+  const digits = value.replace(/\D/g, "");
+  return /^0(5\d|[2-49])\d{7}$/.test(digits);
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
 function LeadFormPlaceholder() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
+  const [privacy, setPrivacy] = useState(false);
+  const [marketing, setMarketing] = useState(false);
   const [touched, setTouched] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  const hasContact = phone.trim() !== "" || email.trim() !== "";
-  const canSubmit = name.trim() !== "" && hasContact;
+  const nameOk = name.trim() !== "";
+  const phoneTrim = phone.trim();
+  const emailTrim = email.trim();
+  const hasContact = phoneTrim !== "" || emailTrim !== "";
+  const phoneOk = phoneTrim === "" || isValidIsraeliPhone(phoneTrim);
+  const emailOk = emailTrim === "" || isValidEmail(emailTrim);
+  const canSubmit = nameOk && hasContact && phoneOk && emailOk && privacy;
+
+  const nameError = touched && !nameOk ? "נא למלא שם" : null;
+  const contactError =
+    touched && !hasContact ? "צריך למלא טלפון או אימייל" : null;
+  const phoneError =
+    touched && phoneTrim !== "" && !phoneOk
+      ? "מספר הטלפון לא תקין"
+      : null;
+  const emailError =
+    touched && emailTrim !== "" && !emailOk
+      ? "כתובת האימייל לא תקינה"
+      : null;
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    setTouched(true);
+    if (!canSubmit) return;
+    // UI-only — no webhook / external submit
+    setSuccess(true);
+  };
+
+  if (success) {
+    return (
+      <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6 text-center shadow-[var(--shadow-card)] sm:p-8">
+        <p className="text-lg font-semibold text-text">
+          קיבלנו. נחזור אליכם בהקדם.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-[var(--shadow-card)] sm:p-8">
-      <h3 className="text-xl font-bold text-text">גם לכסף מגיע עין שנייה</h3>
+      <h3 className="text-xl font-bold text-text">
+        זה הפער. עכשיו אפשר לבדוק מה עושים איתו.
+      </h3>
       <p className="mt-2 text-sm leading-relaxed text-text-muted">
-        השאירו פרטים ונחזור אליכם לבדיקה ראשונית — ללא התחייבות. המחשבון עצמו
-        הוא כלי המחשה בלבד.
+        פער לא נסגר מעצמו. השאירו פרטים ונחזור אליכם. בלי התחייבות.
       </p>
-      <div className="mt-5 space-y-3">
+
+      <form className="mt-6 space-y-3" onSubmit={handleSubmit} noValidate>
+        <h4 className="text-base font-semibold text-text">בואו נבדוק את התיק</h4>
+
         <Field label="שם מלא">
           <TextInput
             value={name}
             onChange={setName}
-            placeholder="שם מלא"
-            error={touched && name.trim() === ""}
+            placeholder="השם שלכם"
+            error={Boolean(nameError)}
           />
+          {nameError ? (
+            <span className="mt-1 block text-xs text-[var(--color-gap)]">
+              {nameError}
+            </span>
+          ) : null}
         </Field>
-        <Field label="טלפון נייד">
+
+        <Field label="טלפון">
           <TextInput
             value={phone}
             onChange={setPhone}
-            placeholder="05X-XXXXXXX"
+            placeholder="050-0000000"
             inputMode="tel"
-            error={touched && !hasContact}
+            error={Boolean(contactError || phoneError)}
           />
+          {phoneError ? (
+            <span className="mt-1 block text-xs text-[var(--color-gap)]">
+              {phoneError}
+            </span>
+          ) : null}
         </Field>
-        <p className="text-center text-xs text-text-muted">או</p>
+
         <Field label="אימייל">
           <TextInput
             value={email}
@@ -644,22 +713,70 @@ function LeadFormPlaceholder() {
             placeholder="name@example.com"
             type="email"
             inputMode="email"
-            error={touched && !hasContact}
+            error={Boolean(contactError || emailError)}
           />
+          {emailError ? (
+            <span className="mt-1 block text-xs text-[var(--color-gap)]">
+              {emailError}
+            </span>
+          ) : null}
         </Field>
-        <PrimaryButton
-          onClick={() => {
-            setTouched(true);
-            // UI-only placeholder — no webhook / submit yet
-          }}
-          disabled={touched && !canSubmit}
+
+        {contactError ? (
+          <p className="text-xs text-[var(--color-gap)]">{contactError}</p>
+        ) : (
+          <p className="text-xs text-text-muted">
+            מספיק טלפון או אימייל. לא צריך את שניהם.
+          </p>
+        )}
+
+        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-text">
+          <input
+            type="checkbox"
+            checked={privacy}
+            onChange={(e) => setPrivacy(e.target.checked)}
+            className="mt-1 size-4 shrink-0 rounded border-border accent-[var(--color-primary)]"
+            required
+          />
+          <span>
+            הפרטים ישמשו לחזרה אליי בנוגע לפנייה זו, בהתאם ל
+            <Link
+              href="/privacy"
+              className="font-medium text-primary underline-offset-2 hover:underline"
+            >
+              מדיניות הפרטיות
+            </Link>
+            .
+          </span>
+        </label>
+        {touched && !privacy ? (
+          <p className="text-xs text-[var(--color-gap)]">
+            נא לאשר את השימוש בפרטים בהתאם למדיניות הפרטיות
+          </p>
+        ) : null}
+
+        <label className="flex items-start gap-2.5 text-sm leading-relaxed text-text">
+          <input
+            type="checkbox"
+            checked={marketing}
+            onChange={(e) => setMarketing(e.target.checked)}
+            className="mt-1 size-4 shrink-0 rounded border-border accent-[var(--color-primary)]"
+          />
+          <span>
+            אשמח לקבל עדכונים ודיוורים מעין שנייה. אפשר להסיר בכל עת.
+          </span>
+        </label>
+
+        <button
+          type="submit"
+          className="w-full rounded-[var(--radius-btn)] bg-primary px-5 py-3 text-base font-semibold text-white shadow-sm transition-colors hover:bg-primary-hover focus-visible:outline focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-primary"
         >
           רוצה לבדוק איך לשפר את התיק
-        </PrimaryButton>
-        <p className="text-xs text-text-muted">
-          שליחת הפרטים תתווסף בשלב מאוחר יותר. בינתיים זהו ממשק בלבד.
+        </button>
+        <p className="text-xs leading-relaxed text-text-muted">
+          עין שנייה אינה משווקת פנסיונית מורשית ואינה נותנת ייעוץ פנסיוני.
         </p>
-      </div>
+      </form>
     </div>
   );
 }
@@ -1172,30 +1289,26 @@ export function PensionGapCalculator() {
         </div>
       ) : null}
 
-      {/* Disclaimer — excludes קצבת זקנה explicitly */}
+      {/* Disclaimer — pack wording; excludes קצבת זקנה */}
       <aside className="rounded-[var(--radius-card)] border border-border bg-surface-muted/60 p-5 text-sm leading-relaxed text-text-muted">
-        <p className="font-semibold text-text">חשוב לדעת</p>
-        <ul className="mt-3 list-disc space-y-2 pe-5">
-          <li>
-            המחשבון נועד לספק תמונת מצב ואינדיקציה ראשונית בלבד, על בסיס
-            הנתונים שהזנתם והנחות תחשיב כלליות (לרבות הנחות תשואה ואינפלציה
-            שאינן מובטחות). אין לראות בתוצאות ייעוץ פנסיוני, ייעוץ השקעות או
-            ייעוץ מס.
-          </li>
-          <li>
-            מפעיל האתר אינו בעל רישיון ואינו עוסק בייעוץ או בשיווק פנסיוני.
-          </li>
-          <li>
-            <strong className="text-text">
-              החישוב אינו כולל קצבת זקנה / קצבת אזרח ותיק מביטוח לאומי.
-            </strong>{" "}
-            הזכאות לקצבה זו תלויה בתנאי הביטוח הלאומי ואינה מובטחת לכל חוסך.
-          </li>
-          <li>
-            מקדם ההמרה, דמי ניהול בפועל, רציפות הפרשות ועליית שכר עתידית
-            מוצגים כקירוב כללי בלבד.
-          </li>
-        </ul>
+        <p>
+          <strong className="font-semibold text-text">
+            החישוב להמחשה בלבד.
+          </strong>{" "}
+          הוא מתבסס על הנתונים שהזנתם ועל הנחות כלליות, כמו תשואה שנתית ומקדם
+          המרה משוערים. הוא לא מבטיח קצבה, תשואה או תוצאה כלשהי.
+        </p>
+        <p className="mt-3">
+          <strong className="font-semibold text-text">
+            קצבת זקנה (קצבת אזרח ותיק) מביטוח לאומי אינה נכללת בחישוב
+          </strong>
+          , גם אם אתם זכאים לה.
+        </p>
+        <p className="mt-3">
+          תשואות עבר אינן מעידות על תשואות עתידיות. עין שנייה אינה בעלת רישיון
+          שיווק פנסיוני או ייעוץ פנסיוני. המידע אינו ייעוץ ואינו תחליף לבדיקה
+          אישית אצל בעל רישיון.
+        </p>
       </aside>
     </div>
   );
